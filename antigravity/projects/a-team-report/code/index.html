@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>A班集計</title>
+    <style>
+        /* 基本設定 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #f5f7fa;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .sync-status {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 10;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            background-color: #ccc;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .connected .dot {
+            background-color: #28a745;
+            box-shadow: 0 0 8px #28a745;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0% {
+                opacity: 0.4;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.4;
+            }
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 5px 0;
+        }
+
+        .status-item {
+            background: #e9ecef;
+            border-radius: 15px;
+            padding: 4px 12px;
+            font-size: 0.85rem;
+            border: 1px solid #ccc;
+            transition: all 0.3s;
+            color: #777;
+        }
+
+        .status-item.completed {
+            background: #84fab0;
+            border-color: #4caf50;
+            color: #155724;
+            font-weight: 800;
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .summary-table th,
+        .summary-table td {
+            padding: 10px 4px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            font-size: 13px;
+        }
+
+        .summary-table th:nth-child(1),
+        .summary-table td:nth-child(1) {
+            width: 70px;
+            font-weight: 800;
+            background: #fafafa;
+            text-align: left;
+            padding-left: 8px;
+        }
+
+        .rca-header {
+            background: #2196f3;
+            color: white;
+        }
+
+        .konren-header {
+            background: #ff9800;
+            color: white;
+        }
+
+        .hatsusei-header {
+            background: #e91e63;
+            color: white;
+        }
+
+        .rca-col {
+            background: #e3f2fd;
+            color: #0d47a1;
+            font-weight: 800;
+        }
+
+        .konren-col {
+            background: #fff3e0;
+            color: #e65100;
+            font-weight: 800;
+        }
+
+        .hatsusei-col {
+            background: #fce4ec;
+            color: #880e4f;
+            font-weight: 800;
+        }
+
+        .worker-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .worker-card.has-input {
+            border-color: #4caf50;
+        }
+
+        .worker-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .worker-header .name {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .worker-header .check {
+            font-size: 24px;
+            display: none;
+        }
+
+        .worker-card.has-input .check {
+            display: block;
+        }
+
+        .input-grid {
+            display: grid;
+            gap: 8px;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 1fr;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .input-row .label {
+            font-size: 14px;
+            font-weight: 800;
+            color: #555;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .category-label {
+            position: absolute;
+            top: -6px;
+            left: 8px;
+            background: white;
+            padding: 0 4px;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .input-wrapper.rca .category-label {
+            color: #2196f3;
+        }
+
+        .input-wrapper.konren .category-label {
+            color: #ff9800;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .input-wrapper.rca input {
+            border-color: #2196f3;
+            background: #e3f2fd;
+            color: #0d47a1;
+        }
+
+        .input-wrapper.konren input {
+            border-color: #ff9800;
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .reset-info {
+            font-size: 11px;
+            color: #999;
+            text-align: center;
+            margin-top: 10px;
+            padding-bottom: 5px;
+        }
+
+        .calculation-note {
+            font-size: 10px;
+            color: #aaa;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        /* 読み込み中オーバーレイ */
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #764ba2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 読み込み中表示 -->
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+        <p style="font-weight: bold; color: #764ba2;">データを同期中...</p>
+    </div>
+
+    <div class="container">
+        <div id="syncStatus" class="sync-status"><span class="dot"></span></div>
+
+        <div class="header">
+            <h1>🏭 A班集計</h1>
+            <p id="todayDate" class="subtitle" style="opacity: 0.9; font-weight: bold;"></p>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <div class="section-title">✅ 入力状況</div>
+                <div class="status-container">
+                    <span class="status-item" id="status-hirayama">平山</span>
+                    <span class="status-item" id="status-hikida">匹田</span>
+                    <span class="status-item" id="status-mukai">向井</span>
+                    <span class="status-item" id="status-oumi">大海</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📊 集計結果</div>
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th>設備</th>
+                            <th class="rca-header">RCA</th>
+                            <th class="konren-header">混練</th>
+                            <th class="hatsusei-header">発生量</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summaryBody"></tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <div class="section-title">✏️ 作業者別入力</div>
+                <div id="worker-inputs-container"></div>
+            </div>
+
+            <div class="reset-info">※ 入力内容は毎日17:00に自動リセットされます</div>
+            <div class="calculation-note">※ 発生量 = (RCA + 混練) / 24 で算出</div>
+        </div>
+    </div>
+
+    <!-- 外部設定ファイルの読み込み -->
+    <script src="../../../../config/firebase_config.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        const now = new Date();
+        document.getElementById('todayDate').textContent = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
+
+        // firebaseConfig は外部ファイルから読み込まれます
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const equipments = [
+            { id: 'd21', name: 'D21' }, { id: '17bg', name: '17BG' },
+            { id: '12ep', name: '12EP' }, { id: '16ep', name: '16EP' },
+            { id: 'boiler', name: 'ボイラー' }, { id: '11ep', name: '11EP' }, { id: 'kfb', name: 'KFB' }
+        ];
+        const workers = [
+            { id: 'hirayama', name: '平山' }, { id: 'hikida', name: '匹田' },
+            { id: 'mukai', name: '向井' }, { id: 'oumi', name: '大海' }
+        ];
+
+        function init() {
+            const tbody = document.getElementById('summaryBody');
+            tbody.innerHTML = equipments.map(eq => `
+                <tr>
+                    <td class="equipment-name">${eq.name}</td>
+                    <td class="rca-col" id="sum-${eq.id}-rca">0.0</td>
+                    <td class="konren-col" id="sum-${eq.id}-konren">0.0</td>
+                    <td class="hatsusei-col" id="sum-${eq.id}-hassei">0.0</td>
+                </tr>
+            `).join('');
+
+            const container = document.getElementById('worker-inputs-container');
+            container.innerHTML = workers.map(w => `
+                <div class="worker-card" id="worker-${w.id}">
+                    <div class="worker-header"><span class="name">${w.name}</span><span class="check">✅</span></div>
+                    <div class="input-grid">
+                        ${equipments.map(eq => `
+                            <div class="input-row">
+                                <span class="label">${eq.name}</span>
+                                <div class="input-wrapper rca"><span class="category-label">RCA</span><input type="number" id="${w.id}-${eq.id}-rca" step="0.1" inputmode="decimal"></div>
+                                <div class="input-wrapper konren"><span class="category-label">混練</span><input type="number" id="${w.id}-${eq.id}-konren" step="0.1" inputmode="decimal"></div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            // イベントリスナーの登録
+            document.querySelectorAll('input').forEach(i => {
+                // 入力時の同期
+                i.addEventListener('input', (e) => {
+                    const val = parseFloat(e.target.value);
+                    database.ref('inputs/' + e.target.id).set(isNaN(val) ? null : val);
+                });
+                // フォーカス時に全選択（入力しやすくする）
+                i.addEventListener('focus', (e) => {
+                    e.target.select();
+                });
+            });
+        }
+
+        let serverTimeOffset = 0;
+        let isOffsetLoaded = false;
+
+        firebase.database().ref('.info/serverTimeOffset').on('value', (snap) => {
+            serverTimeOffset = snap.val() || 0;
+            isOffsetLoaded = true;
+            // オフセットが取得できたら一度リセット確認を行う
+            checkAutoReset();
+        });
+
+        function getServerTime() {
+            return new Date(Date.now() + serverTimeOffset);
+        }
+
+        function checkAutoReset() {
+            if (!isOffsetLoaded) return; // サーバー時刻が未確定なら実行しない
+
+            const now = getServerTime();
+            let targetTime = new Date(now.getTime());
+            targetTime.setHours(17, 0, 0, 0);
+
+            if (now < targetTime) {
+                targetTime.setDate(targetTime.getDate() - 1);
+            }
+
+            database.ref('lastResetAt').once('value').then((snap) => {
+                const lastResetAt = snap.val();
+                if (!lastResetAt || new Date(lastResetAt) < targetTime) {
+                    database.ref('lastResetAt').transaction((currentValue) => {
+                        if (!currentValue || new Date(currentValue) < targetTime) {
+                            return now.toISOString();
+                        }
+                        return;
+                    }, (error, committed) => {
+                        if (committed) {
+                            database.ref('inputs').set({});
+                            console.log("17:00の自動リセットを実行しました");
+                        }
+                    });
+                }
+            });
+        }
+
+        // 初期化実行
+        init();
+
+        // 定期的なリセットチェック
+        setInterval(checkAutoReset, 60000);
+
+        // 接続状態の監視
+        firebase.database().ref('.info/connected').on('value', (snap) => {
+            const isConnected = snap.val() === true;
+            document.getElementById('syncStatus').className = isConnected ? 'sync-status connected' : 'sync-status';
+        });
+
+        // データのリアルタイム反映
+        database.ref('inputs').on('value', (snap) => {
+            const data = snap.val() || {};
+
+            // 初回読み込み完了後にオーバーレイを消す
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.remove(), 500);
+            }
+
+            document.querySelectorAll('input').forEach(input => {
+                if (document.activeElement !== input) {
+                    const dbValue = data[input.id] !== undefined ? data[input.id] : '';
+                    if (input.value != dbValue) {
+                        input.value = dbValue;
+                    }
+                }
+            });
+
+            equipments.forEach(eq => {
+                let rca = 0, kon = 0;
+                workers.forEach(w => {
+                    rca += (data[`${w.id}-${eq.id}-rca`] || 0);
+                    kon += (data[`${w.id}-${eq.id}-konren`] || 0);
+                });
+                document.getElementById(`sum-${eq.id}-rca`).textContent = rca.toFixed(1);
+                document.getElementById(`sum-${eq.id}-konren`).textContent = kon.toFixed(1);
+                document.getElementById(`sum-${eq.id}-hassei`).textContent = ((rca + kon) / 24).toFixed(1);
+            });
+
+            workers.forEach(w => {
+                let hasVal = equipments.some(eq => data[`${w.id}-${eq.id}-rca`] !== undefined || data[`${w.id}-${eq.id}-konren`] !== undefined);
+                const statusItem = document.getElementById(`status-${w.id}`);
+                statusItem.classList.toggle('completed', hasVal);
+                statusItem.textContent = hasVal ? w.name + ' ✅' : w.name;
+                document.getElementById(`worker-${w.id}`).classList.toggle('has-input', hasVal);
+            });
+        });
+    </script>
+</body>
+
+</html>
