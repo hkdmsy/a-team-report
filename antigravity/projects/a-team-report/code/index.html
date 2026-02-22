@@ -380,8 +380,8 @@
             </div>
 
             <div class="reset-info" id="resetDisplay">※ 入力内容は毎日17:00に自動リセットされます</div>
-            <div id="lastResetDisplay" style="font-size: 10px; color: #bbb; text-align: center; margin-bottom: 10px;">
-            </div>
+            <div id="lastResetDisplay"
+                style="font-size: 10px; color: #bbb; text-align: center; margin-bottom: 10px; min-height: 15px;"></div>
             <div class="calculation-note">※ 発生量 = (RCA + 混練) / 24 で算出</div>
         </div>
     </div>
@@ -489,7 +489,7 @@
                 targetTime.setDate(targetTime.getDate() - 1);
             }
 
-            database.ref('lastResetAt').once('value').then((snap) => {
+            database.ref('inputs/_lastResetAt').once('value').then((snap) => {
                 const lastResetAtStr = snap.val();
                 const lastResetAt = lastResetAtStr ? new Date(lastResetAtStr) : new Date(0);
 
@@ -501,25 +501,26 @@
         }
 
         function executeReset(resetTime) {
-            // ルートでトランザクションをかけることで、時間更新とデータ削除を「同時に」行う
-            database.ref().transaction((currentData) => {
-                if (!currentData) currentData = {};
-                const lastResetAtStr = currentData.lastResetAt;
-                const lastResetAt = lastResetAtStr ? new Date(lastResetAtStr) : new Date(0);
+            let targetTime = new Date(resetTime.getTime());
+            targetTime.setHours(17, 0, 0, 0);
+            if (resetTime < targetTime) targetTime.setDate(targetTime.getDate() - 1);
 
-                // ターゲット時刻を再計算（トランザクション内での最新状態確認）
-                let targetTime = new Date(resetTime.getTime());
-                targetTime.setHours(17, 0, 0, 0);
-                if (resetTime < targetTime) targetTime.setDate(targetTime.getDate() - 1);
-
+            database.ref('inputs/_lastResetAt').transaction((currentValue) => {
+                const lastResetAt = currentValue ? new Date(currentValue) : new Date(0);
                 if (lastResetAt < targetTime) {
-                    currentData.lastResetAt = resetTime.toISOString();
-                    currentData.inputs = {}; // データを空にする
-                    return currentData;
+                    return resetTime.toISOString();
                 }
                 return; // 既に誰かがリセット済みなら更新しない
             }, (error, committed) => {
-                if (committed) {
+                if (error) {
+                    console.error("Transaction failed: ", error);
+                } else if (committed) {
+                    equipments.forEach(eq => {
+                        workers.forEach(w => {
+                            database.ref(`inputs/${w.id}-${eq.id}-rca`).remove();
+                            database.ref(`inputs/${w.id}-${eq.id}-konren`).remove();
+                        });
+                    });
                     console.log("17:00の自動リセットを完了しました");
                 }
             });
@@ -527,21 +528,31 @@
 
         function forceReset() {
             const now = getServerTime();
-            database.ref().update({
-                lastResetAt: now.toISOString(),
-                inputs: {}
-            }).then(() => {
+            const promises = [database.ref('inputs/_lastResetAt').set(now.toISOString())];
+            equipments.forEach(eq => {
+                workers.forEach(w => {
+                    promises.push(database.ref(`inputs/${w.id}-${eq.id}-rca`).remove());
+                    promises.push(database.ref(`inputs/${w.id}-${eq.id}-konren`).remove());
+                });
+            });
+
+            Promise.all(promises).then(() => {
                 alert('データをリセットしました');
+            }).catch(error => {
+                console.error("手動リセット失敗: ", error);
+                alert('リセットに失敗しました。権限エラーの可能性があります。');
             });
         }
 
         // リセット時刻のリアルタイム表示
-        database.ref('lastResetAt').on('value', (snap) => {
+        database.ref('inputs/_lastResetAt').on('value', (snap) => {
             const val = snap.val();
             if (val) {
                 const d = new Date(val);
                 const timeStr = `${d.getMonth() + 1}/${d.getDate()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
                 document.getElementById('lastResetDisplay').textContent = `最終更新(リセット): ${timeStr}`;
+            } else {
+                document.getElementById('lastResetDisplay').textContent = `最終更新(リセット): 未設定（リセット記録なし）`;
             }
         });
 
