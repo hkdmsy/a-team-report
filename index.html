@@ -6,36 +6,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>A班集計</title>
     <style>
+        /* デザインシステム（変数） */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-sub: #555555;
+            --text-muted: #999999;
+            --border-color: #e0e0e0;
+            --input-bg: #ffffff;
+            --section-title-line: #e0e0e0;
+
+            /* カテゴリカラー */
+            --rca-main: #2196f3;
+            --rca-bg: #e3f2fd;
+            --rca-text: #0d47a1;
+            --konren-main: #ff9800;
+            --konren-bg: #fff3e0;
+            --konren-text: #e65100;
+            --hatsusei-main: #e91e63;
+            --hatsusei-bg: #fce4ec;
+            --hatsusei-text: #880e4f;
+
+            --success-color: #4caf50;
+            --success-bg: #84fab0;
+            --shadow: rgba(0, 0, 0, 0.08);
+        }
+
         /* 基本設定 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--bg-color);
+            background-attachment: fixed;
             min-height: 100vh;
             padding: 10px;
+            color: var(--text-main);
+        }
+
+        /* 背景グラデーション（bodyの代わりにコンテナ外に配置） */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: -1;
+            opacity: 0.8;
         }
 
         .container {
             max-width: 600px;
             margin: 0 auto;
-            background-color: #f5f7fa;
-            border-radius: 16px;
+            background-color: var(--bg-color);
+            border-radius: 20px;
             overflow: hidden;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             position: relative;
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary-gradient);
             color: white;
-            padding: 20px;
+            padding: 25px 20px;
             text-align: center;
+            position: relative;
         }
 
         .header h1 {
@@ -85,19 +130,19 @@
         }
 
         .section {
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 18px;
             margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 12px var(--shadow);
         }
 
         .section-title {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 800;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             padding-bottom: 8px;
-            border-bottom: 3px solid #e0e0e0;
+            border-bottom: 3px solid var(--section-title-line);
             display: flex;
             align-items: center;
             gap: 8px;
@@ -106,106 +151,121 @@
         .status-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 8px;
             padding: 5px 0;
         }
 
         .status-item {
-            background: #e9ecef;
-            border-radius: 15px;
-            padding: 4px 12px;
-            font-size: 0.85rem;
-            border: 1px solid #ccc;
+            background: rgba(150, 150, 150, 0.1);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
             transition: all 0.3s;
-            color: #777;
+            color: var(--text-sub);
         }
 
         .status-item.completed {
-            background: #84fab0;
-            border-color: #4caf50;
+            background: var(--success-bg);
+            border-color: var(--success-color);
             color: #155724;
             font-weight: 800;
+            box-shadow: 0 2px 5px rgba(76, 175, 80, 0.2);
         }
 
         .summary-table {
             width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
         }
 
         .summary-table th,
         .summary-table td {
-            padding: 10px 4px;
+            padding: 12px 4px;
             text-align: center;
-            border: 1px solid #e0e0e0;
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
             font-size: 13px;
         }
 
-        .summary-table th:nth-child(1),
-        .summary-table td:nth-child(1) {
+        .summary-table th:last-child,
+        .summary-table td:last-child {
+            border-right: none;
+        }
+
+        .summary-table th {
+            font-weight: 800;
+            font-size: 12px;
+        }
+
+        .summary-table td:first-child {
             width: 70px;
             font-weight: 800;
-            background: #fafafa;
+            background: rgba(150, 150, 150, 0.05);
             text-align: left;
-            padding-left: 8px;
+            padding-left: 10px;
         }
 
         .rca-header {
-            background: #2196f3;
+            background: var(--rca-main);
             color: white;
         }
 
         .konren-header {
-            background: #ff9800;
+            background: var(--konren-main);
             color: white;
         }
 
         .hatsusei-header {
-            background: #e91e63;
+            background: var(--hatsusei-main);
             color: white;
         }
 
         .rca-col {
-            background: #e3f2fd;
-            color: #0d47a1;
+            background: var(--rca-bg);
+            color: var(--rca-text);
             font-weight: 800;
         }
 
         .konren-col {
-            background: #fff3e0;
-            color: #e65100;
+            background: var(--konren-bg);
+            color: var(--konren-text);
             font-weight: 800;
         }
 
         .hatsusei-col {
-            background: #fce4ec;
-            color: #880e4f;
+            background: var(--hatsusei-bg);
+            color: var(--hatsusei-text);
             font-weight: 800;
         }
 
         .worker-card {
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 12px;
-            border: 2px solid #e0e0e0;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 2px solid var(--border-color);
+            transition: transform 0.2s, border-color 0.3s;
         }
 
         .worker-card.has-input {
-            border-color: #4caf50;
+            border-color: var(--success-color);
         }
 
         .worker-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
         }
 
         .worker-header .name {
-            font-size: 18px;
+            font-size: 19px;
             font-weight: 800;
         }
 
@@ -220,20 +280,22 @@
 
         .input-grid {
             display: grid;
-            gap: 8px;
+            gap: 12px;
         }
 
         .input-row {
             display: grid;
-            grid-template-columns: 80px 1fr 1fr;
-            gap: 8px;
+            grid-template-columns: 75px 1fr 1fr;
+            gap: 10px;
             align-items: center;
+            margin-bottom: 20px;
+            /* エラー文字表示のために少し広げる */
         }
 
         .input-row .label {
             font-size: 14px;
             font-weight: 800;
-            color: #555;
+            color: var(--text-sub);
         }
 
         .input-wrapper {
@@ -242,57 +304,114 @@
 
         .category-label {
             position: absolute;
-            top: -6px;
-            left: 8px;
-            background: white;
-            padding: 0 4px;
+            top: -7px;
+            left: 10px;
+            background: var(--card-bg);
+            padding: 0 5px;
             font-size: 10px;
             font-weight: 800;
+            z-index: 1;
         }
 
         .input-wrapper.rca .category-label {
-            color: #2196f3;
+            color: var(--rca-main);
         }
 
         .input-wrapper.konren .category-label {
-            color: #ff9800;
+            color: var(--konren-main);
         }
 
         input[type="number"] {
             width: 100%;
-            padding: 12px 8px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
+            padding: 14px 8px;
+            /* 入力しやすくサイズアップ */
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 18px;
+            /* 文字を大きく */
             font-weight: 700;
             text-align: center;
+            background: var(--input-bg);
+            color: var(--text-main);
+            outline: none;
+        }
+
+        /* フォーカス時の強調 */
+        input[type="number"]:focus {
+            border-color: currentColor;
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            z-index: 2;
+        }
+
+        /* バリデーション警告用スタイル */
+        input[type="number"].error {
+            border-color: #f44336 !important;
+            background-color: #ffebee !important;
+            color: #d32f2f !important;
+        }
+
+        .error-text {
+            color: #d32f2f;
+            font-size: 10px;
+            font-weight: 800;
+            position: absolute;
+            bottom: -15px;
+            left: 5px;
+            display: none;
+            white-space: nowrap;
+        }
+
+        .input-wrapper.has-error .error-text {
+            display: block;
         }
 
         .input-wrapper.rca input {
-            border-color: #2196f3;
-            background: #e3f2fd;
-            color: #0d47a1;
+            border-color: var(--rca-main);
         }
 
         .input-wrapper.konren input {
-            border-color: #ff9800;
-            background: #fff3e0;
-            color: #e65100;
+            border-color: var(--konren-main);
         }
 
         .reset-info {
             font-size: 11px;
-            color: #999;
+            color: var(--text-muted);
             text-align: center;
-            margin-top: 10px;
+            margin-top: 20px;
             padding-bottom: 5px;
         }
 
         .calculation-note {
             font-size: 10px;
-            color: #aaa;
+            color: var(--text-muted);
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* トースト通知 */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(40, 167, 69, 0.95);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2000;
+        }
+
+        .toast.error {
+            background: rgba(244, 67, 54, 0.95);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
         }
 
         /* 読み込み中オーバーレイ */
@@ -302,7 +421,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.9);
+            background: var(--bg-color);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -312,13 +431,13 @@
         }
 
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #764ba2;
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(150, 150, 150, 0.2);
+            border-top: 5px solid #764ba2;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         @keyframes spin {
@@ -328,6 +447,25 @@
 
             100% {
                 transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 30px 15px;
+            }
+
+            .content {
+                padding: 10px;
+            }
+
+            .section {
+                padding: 15px;
+            }
+
+            .input-row {
+                grid-template-columns: 65px 1fr 1fr;
+                gap: 8px;
             }
         }
     </style>
@@ -341,6 +479,7 @@
     </div>
 
     <div class="container">
+
         <div id="syncStatus" class="sync-status"><span class="dot"></span></div>
 
         <div class="header">
@@ -386,6 +525,9 @@
         </div>
     </div>
 
+    <!-- トースト通知 -->
+    <div id="toast" class="toast">保存しました</div>
+
     <!-- 外部設定ファイルの読み込み -->
     <script src="./antigravity/config/firebase_config.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -394,6 +536,24 @@
     <script>
         const now = new Date();
         document.getElementById('todayDate').textContent = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
+
+        // トースト通知関数
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.textContent = message;
+                toast.className = 'toast' + (isError ? ' error' : '') + ' show';
+                if (toast.timer) clearTimeout(toast.timer);
+                toast.timer = setTimeout(() => toast.classList.remove('show'), 2000);
+            }
+        }
+
+        // オフライン保存用関数
+        function saveOfflineData(id, val) {
+            const offlineData = JSON.parse(localStorage.getItem('offlineInputs') || '{}');
+            offlineData[id] = val;
+            localStorage.setItem('offlineInputs', JSON.stringify(offlineData));
+        }
 
         // firebaseConfig は外部ファイルから読み込まれます
         firebase.initializeApp(firebaseConfig);
@@ -428,8 +588,16 @@
                         ${equipments.map(eq => `
                             <div class="input-row">
                                 <span class="label">${eq.name}</span>
-                                <div class="input-wrapper rca"><span class="category-label">RCA</span><input type="number" id="${w.id}-${eq.id}-rca" step="0.1" inputmode="decimal"></div>
-                                <div class="input-wrapper konren"><span class="category-label">混練</span><input type="number" id="${w.id}-${eq.id}-konren" step="0.1" inputmode="decimal"></div>
+                                <div class="input-wrapper rca">
+                                    <span class="category-label">RCA</span>
+                                    <input type="number" id="${w.id}-${eq.id}-rca" step="0.1" inputmode="decimal">
+                                    <div class="error-text">異常値です</div>
+                                </div>
+                                <div class="input-wrapper konren">
+                                    <span class="category-label">混練</span>
+                                    <input type="number" id="${w.id}-${eq.id}-konren" step="0.1" inputmode="decimal">
+                                    <div class="error-text">異常値です</div>
+                                </div>
                             </div>
                         `).join('')}
                     </div>
@@ -438,18 +606,39 @@
 
             // イベントリスナーの登録
             document.querySelectorAll('input').forEach(i => {
-                // 入力時の同期
                 i.addEventListener('input', (e) => {
                     const val = parseFloat(e.target.value);
-                    database.ref('inputs/' + e.target.id).set(isNaN(val) ? null : val);
+
+                    // バリデーション処理（0未満、または極端に大きい数値）
+                    const wrapper = e.target.closest('.input-wrapper');
+                    let hasError = false;
+                    if (!isNaN(val) && (val < 0 || val > 5000)) {
+                        e.target.classList.add('error');
+                        wrapper.classList.add('has-error');
+                        wrapper.querySelector('.error-text').textContent = val < 0 ? 'マイナス値です' : '数値が異常です';
+                        hasError = true;
+                    } else {
+                        e.target.classList.remove('error');
+                        wrapper.classList.remove('has-error');
+                    }
+
+                    const finalVal = isNaN(val) ? null : val;
+                    const path = 'inputs/' + e.target.id;
+
+                    if (window.isOnline) {
+                        database.ref(path).set(finalVal).then(() => {
+                            if (!hasError && !isNaN(val)) showToast('保存しました');
+                        });
+                    } else {
+                        saveOfflineData(e.target.id, finalVal);
+                        if (!hasError && !isNaN(val)) showToast('オフライン（一時保存）', true);
+                    }
                 });
-                // フォーカス時に全選択（入力しやすくする）
                 i.addEventListener('focus', (e) => {
                     e.target.select();
                 });
             });
 
-            // 手動リセットの隠し機能（5回タップで実行）
             let tapCount = 0;
             document.getElementById('resetDisplay').addEventListener('click', () => {
                 tapCount++;
@@ -469,34 +658,22 @@
         firebase.database().ref('.info/serverTimeOffset').on('value', (snap) => {
             serverTimeOffset = snap.val() || 0;
             isOffsetLoaded = true;
-            // オフセットが取得できたら一度リセット確認を行う
             checkAutoReset();
         });
 
-        function getServerTime() {
-            return new Date(Date.now() + serverTimeOffset);
-        }
+        function getServerTime() { return new Date(Date.now() + serverTimeOffset); }
 
         function checkAutoReset() {
             if (!isOffsetLoaded) return;
-
             const now = getServerTime();
             let targetTime = new Date(now.getTime());
             targetTime.setHours(17, 0, 0, 0);
-
-            // 17時前なら「昨日の17時」を基準にする
-            if (now < targetTime) {
-                targetTime.setDate(targetTime.getDate() - 1);
-            }
+            if (now < targetTime) targetTime.setDate(targetTime.getDate() - 1);
 
             database.ref('lastResetAt').once('value').then((snap) => {
                 const lastResetAtStr = snap.val();
                 const lastResetAt = lastResetAtStr ? new Date(lastResetAtStr) : new Date(0);
-
-                // もし最後にリセットした時間が、目標の時間(今日の17時)より前ならリセット実行
-                if (lastResetAt < targetTime) {
-                    executeReset(now);
-                }
+                if (lastResetAt < targetTime) executeReset(now);
             });
         }
 
@@ -507,65 +684,56 @@
 
             database.ref('lastResetAt').transaction((currentValue) => {
                 const lastResetAt = currentValue ? new Date(currentValue) : new Date(0);
-                if (lastResetAt < targetTime) {
-                    return resetTime.toISOString();
-                }
-                return; // 既に誰かがリセット済みなら更新しない
+                if (lastResetAt < targetTime) return resetTime.toISOString();
+                return;
             }, (error, committed) => {
-                if (error) {
-                    console.error("Transaction failed: ", error);
-                } else if (committed) {
-                    // ルール変更により可能になった高速な一括削除
-                    database.ref('inputs').remove();
-                    console.log("17:00の自動リセットを完了しました");
-                }
+                if (committed) database.ref('inputs').remove();
             });
         }
 
         function forceReset() {
             const now = getServerTime();
-
-            // ルート全体でアトミックに「時刻更新」と「データ削除」を同時に行う（最も安全で確実な方法）
-            database.ref().update({
-                lastResetAt: now.toISOString(),
-                inputs: null
-            }).then(() => {
-                alert('データをリセットしました');
-            }).catch(error => {
-                console.error("手動リセット失敗: ", error);
-                alert('リセットに失敗しました。');
-            });
+            database.ref().update({ lastResetAt: now.toISOString(), inputs: null })
+                .then(() => alert('データをリセットしました'))
+                .catch(() => alert('リセットに失敗しました。'));
         }
 
-        // リセット時刻のリアルタイム表示
         database.ref('lastResetAt').on('value', (snap) => {
             const val = snap.val();
             if (val) {
                 const d = new Date(val);
                 const timeStr = `${d.getMonth() + 1}/${d.getDate()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
                 document.getElementById('lastResetDisplay').textContent = `最終更新(リセット): ${timeStr}`;
-            } else {
-                document.getElementById('lastResetDisplay').textContent = `最終更新(リセット): 未設定（リセット記録なし）`;
             }
         });
 
-        // 初期化実行
         init();
-
-        // 定期的なリセットチェック
         setInterval(checkAutoReset, 60000);
 
-        // 接続状態の監視
+        window.isOnline = false;
         firebase.database().ref('.info/connected').on('value', (snap) => {
             const isConnected = snap.val() === true;
+            window.isOnline = isConnected;
             document.getElementById('syncStatus').className = isConnected ? 'sync-status connected' : 'sync-status';
+
+            // オンライン復帰時に未送信データをアップロード
+            if (isConnected) {
+                const offlineData = JSON.parse(localStorage.getItem('offlineInputs') || '{}');
+                const keys = Object.keys(offlineData);
+                if (keys.length > 0) {
+                    showToast('オフラインデータを同期中...');
+                    const updates = {};
+                    keys.forEach(k => updates['inputs/' + k] = offlineData[k]);
+                    database.ref().update(updates).then(() => {
+                        localStorage.removeItem('offlineInputs');
+                        showToast('同期完了');
+                    });
+                }
+            }
         });
 
-        // データのリアルタイム反映
         database.ref('inputs').on('value', (snap) => {
             const data = snap.val() || {};
-
-            // 初回読み込み完了後にオーバーレイを消す
             const overlay = document.getElementById('loadingOverlay');
             if (overlay) {
                 overlay.style.opacity = '0';
@@ -575,9 +743,7 @@
             document.querySelectorAll('input').forEach(input => {
                 if (document.activeElement !== input) {
                     const dbValue = data[input.id] !== undefined ? data[input.id] : '';
-                    if (input.value != dbValue) {
-                        input.value = dbValue;
-                    }
+                    if (input.value != dbValue) input.value = dbValue;
                 }
             });
 
