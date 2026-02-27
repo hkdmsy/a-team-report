@@ -163,6 +163,13 @@
             border: 1px solid var(--border-color);
             transition: all 0.3s;
             color: var(--text-sub);
+            cursor: pointer;
+        }
+
+        .status-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background: #e9ecef;
         }
 
         .status-item.completed {
@@ -288,8 +295,16 @@
             grid-template-columns: 75px 1fr 1fr;
             gap: 10px;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
             /* エラー文字表示のために少し広げる */
+        }
+
+        .input-row:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
         }
 
         .input-row .label {
@@ -368,10 +383,20 @@
 
         .input-wrapper.rca input {
             border-color: var(--rca-main);
+            background-color: var(--rca-bg);
+        }
+
+        .input-wrapper.rca input:focus {
+            background-color: var(--input-bg);
         }
 
         .input-wrapper.konren input {
             border-color: var(--konren-main);
+            background-color: var(--konren-bg);
+        }
+
+        .input-wrapper.konren input:focus {
+            background-color: var(--input-bg);
         }
 
         .reset-info {
@@ -468,6 +493,42 @@
                 gap: 8px;
             }
         }
+
+        /* トップに戻るボタン */
+        #scrollTopBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        #scrollTopBtn.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        #scrollTopBtn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
     </style>
 </head>
 
@@ -527,6 +588,9 @@
 
     <!-- トースト通知 -->
     <div id="toast" class="toast">保存しました</div>
+
+    <!-- トップに戻るボタン -->
+    <button id="scrollTopBtn" title="トップに戻る">↑</button>
 
     <!-- 外部設定ファイルの読み込み -->
     <script src="./antigravity/config/firebase_config.js"></script>
@@ -636,6 +700,25 @@
                 });
                 i.addEventListener('focus', (e) => {
                     e.target.select();
+                });
+            });
+
+            // 上部の名前クリックで対象者の入力場所までスクロール
+            document.querySelectorAll('.status-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    const workerId = e.target.id.replace('status-', '');
+                    const targetCard = document.getElementById(`worker-${workerId}`);
+                    if (targetCard) {
+                        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // スクロールした要素をわかりやすくハイライト
+                        const originalBorder = targetCard.style.borderColor;
+                        targetCard.style.borderColor = 'var(--rca-main)';
+                        targetCard.style.boxShadow = '0 0 10px var(--rca-main)';
+                        setTimeout(() => {
+                            targetCard.style.borderColor = originalBorder;
+                            targetCard.style.boxShadow = '';
+                        }, 1000);
+                    }
                 });
             });
 
@@ -764,6 +847,23 @@
                 statusItem.classList.toggle('completed', hasVal);
                 statusItem.textContent = hasVal ? w.name + ' ✅' : w.name;
                 document.getElementById(`worker-${w.id}`).classList.toggle('has-input', hasVal);
+            });
+        });
+
+        // トップに戻るボタンの制御
+        const scrollTopBtn = document.getElementById('scrollTopBtn');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                scrollTopBtn.classList.add('show');
+            } else {
+                scrollTopBtn.classList.remove('show');
+            }
+        });
+
+        scrollTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
             });
         });
     </script>
