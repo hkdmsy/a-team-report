@@ -187,6 +187,25 @@
             border-radius: 8px;
             overflow: hidden;
             border: 1px solid var(--border-color);
+            table-layout: fixed;
+            /* 列幅を固定モードに */
+        }
+
+        /* 列幅の定義 */
+        .summary-table col.col-equip {
+            width: 24%;
+        }
+
+        .summary-table col.col-rca {
+            width: 28%;
+        }
+
+        .summary-table col.col-konren {
+            width: 28%;
+        }
+
+        .summary-table col.col-hassei {
+            width: 20%;
         }
 
         .summary-table th,
@@ -209,7 +228,6 @@
         }
 
         .summary-table td:first-child {
-            width: 70px;
             font-weight: 800;
             background: rgba(150, 150, 150, 0.05);
             text-align: left;
@@ -287,18 +305,20 @@
 
         .input-grid {
             display: grid;
-            gap: 12px;
+            gap: 8px;
+            /* 行間を少し詰める */
         }
 
         .input-row {
             display: grid;
-            grid-template-columns: 75px 1fr 1fr;
-            gap: 10px;
+            grid-template-columns: 60px 1fr 1fr;
+            /* ラベル幅を縮小 */
+            gap: 8px;
+            /* 列間も少し詰める */
             align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
             border-bottom: 1px dashed var(--border-color);
-            /* エラー文字表示のために少し広げる */
         }
 
         .input-row:last-child {
@@ -308,7 +328,8 @@
         }
 
         .input-row .label {
-            font-size: 14px;
+            font-size: 13px;
+            /* 少し小さく */
             font-weight: 800;
             color: var(--text-sub);
         }
@@ -338,12 +359,12 @@
 
         input[type="number"] {
             width: 100%;
-            padding: 14px 8px;
-            /* 入力しやすくサイズアップ */
+            padding: 10px 4px;
+            /* 上下のpaddingを縮小 */
             border: 2px solid var(--border-color);
-            border-radius: 12px;
-            font-size: 18px;
-            /* 文字を大きく */
+            border-radius: 10px;
+            font-size: 16px;
+            /* 文字サイズを少し縮小 */
             font-weight: 700;
             text-align: center;
             background: var(--input-bg);
@@ -489,8 +510,9 @@
             }
 
             .input-row {
-                grid-template-columns: 65px 1fr 1fr;
-                gap: 8px;
+                grid-template-columns: 55px 1fr 1fr;
+                /* モバイルも縮小 */
+                gap: 6px;
             }
         }
 
@@ -562,6 +584,13 @@
             <div class="section">
                 <div class="section-title">📊 集計結果</div>
                 <table class="summary-table">
+                    <!-- 列幅の定義（RCA・混練を同幅、発生量を少し狭く） -->
+                    <colgroup>
+                        <col class="col-equip">
+                        <col class="col-rca">
+                        <col class="col-konren">
+                        <col class="col-hassei">
+                    </colgroup>
                     <thead>
                         <tr>
                             <th>設備</th>
