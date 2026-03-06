@@ -357,7 +357,7 @@
             color: var(--konren-main);
         }
 
-        input[type="number"] {
+        input[type="text"] {
             width: 100%;
             padding: 10px 4px;
             /* 上下のpaddingを縮小 */
@@ -373,7 +373,7 @@
         }
 
         /* フォーカス時の強調 */
-        input[type="number"]:focus {
+        input[type="text"]:focus {
             border-color: currentColor;
             transform: scale(1.02);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -381,7 +381,7 @@
         }
 
         /* バリデーション警告用スタイル */
-        input[type="number"].error {
+        input[type="text"].error {
             border-color: #f44336 !important;
             background-color: #ffebee !important;
             color: #d32f2f !important;
@@ -683,12 +683,12 @@
                                 <span class="label">${eq.name}</span>
                                 <div class="input-wrapper rca">
                                     <span class="category-label">RCA</span>
-                                    <input type="number" id="${w.id}-${eq.id}-rca" step="0.1" inputmode="decimal">
+                                    <input type="text" id="${w.id}-${eq.id}-rca" inputmode="decimal">
                                     <div class="error-text">異常値です</div>
                                 </div>
                                 <div class="input-wrapper konren">
                                     <span class="category-label">混練</span>
-                                    <input type="number" id="${w.id}-${eq.id}-konren" step="0.1" inputmode="decimal">
+                                    <input type="text" id="${w.id}-${eq.id}-konren" inputmode="decimal">
                                     <div class="error-text">異常値です</div>
                                 </div>
                             </div>
@@ -697,38 +697,93 @@
                 </div>
             `).join('');
 
+            // 足し算の計算式を評価する関数
+            // 例: "10+5+3" → 18, "12.5+7.5" → 20, "25" → 25
+            function parseCalcValue(text) {
+                if (!text || text.trim() === '') return { value: NaN, isExpression: false };
+                const cleaned = text.trim();
+                // 数値と+と.のみ許可（安全なバリデーション）
+                if (!/^[\d.]+([+][\d.]+)*$/.test(cleaned)) {
+                    return { value: NaN, isExpression: false };
+                }
+                const parts = cleaned.split('+');
+                const isExpression = parts.length > 1;
+                let sum = 0;
+                for (const part of parts) {
+                    const num = parseFloat(part);
+                    if (isNaN(num)) return { value: NaN, isExpression: false };
+                    sum += num;
+                }
+                // 小数点の丸め誤差を防ぐ（小数第1位まで）
+                sum = Math.round(sum * 10) / 10;
+                return { value: sum, isExpression };
+            }
+
             // イベントリスナーの登録
             document.querySelectorAll('input').forEach(i => {
+                // 元の計算式を保持するための属性
+                i.dataset.expression = '';
+
+                // 入力中のリアルタイム処理（デバウンス付き）
+                let debounceTimer = null;
                 i.addEventListener('input', (e) => {
-                    const val = parseFloat(e.target.value);
+                    // 元の式を保持
+                    e.target.dataset.expression = e.target.value;
 
-                    // バリデーション処理（0未満、または極端に大きい数値）
-                    const wrapper = e.target.closest('.input-wrapper');
-                    let hasError = false;
-                    if (!isNaN(val) && (val < 0 || val > 5000)) {
-                        e.target.classList.add('error');
-                        wrapper.classList.add('has-error');
-                        wrapper.querySelector('.error-text').textContent = val < 0 ? 'マイナス値です' : '数値が異常です';
-                        hasError = true;
-                    } else {
-                        e.target.classList.remove('error');
-                        wrapper.classList.remove('has-error');
-                    }
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        const result = parseCalcValue(e.target.value);
+                        const val = result.value;
 
-                    const finalVal = isNaN(val) ? null : val;
-                    const path = 'inputs/' + e.target.id;
+                        // バリデーション処理
+                        const wrapper = e.target.closest('.input-wrapper');
+                        let hasError = false;
+                        if (e.target.value.trim() !== '' && isNaN(val)) {
+                            e.target.classList.add('error');
+                            wrapper.classList.add('has-error');
+                            wrapper.querySelector('.error-text').textContent = '無効な入力です';
+                            hasError = true;
+                        } else if (!isNaN(val) && (val < 0 || val > 5000)) {
+                            e.target.classList.add('error');
+                            wrapper.classList.add('has-error');
+                            wrapper.querySelector('.error-text').textContent = val < 0 ? 'マイナス値です' : '数値が異常です';
+                            hasError = true;
+                        } else {
+                            e.target.classList.remove('error');
+                            wrapper.classList.remove('has-error');
+                        }
 
-                    if (window.isOnline) {
-                        database.ref(path).set(finalVal).then(() => {
-                            if (!hasError && !isNaN(val)) showToast('保存しました');
-                        });
-                    } else {
-                        saveOfflineData(e.target.id, finalVal);
-                        if (!hasError && !isNaN(val)) showToast('オフライン（一時保存）', true);
-                    }
+                        const finalVal = isNaN(val) ? null : val;
+                        const path = 'inputs/' + e.target.id;
+
+                        if (window.isOnline) {
+                            database.ref(path).set(finalVal).then(() => {
+                                if (!hasError && !isNaN(val)) showToast('保存しました');
+                            });
+                        } else {
+                            saveOfflineData(e.target.id, finalVal);
+                            if (!hasError && !isNaN(val)) showToast('オフライン（一時保存）', true);
+                        }
+                    }, 500);
                 });
+
+                // フォーカス時：保存していた計算式を表示
                 i.addEventListener('focus', (e) => {
+                    const expr = e.target.dataset.expression;
+                    if (expr && expr !== e.target.value) {
+                        e.target.value = expr;
+                    }
                     e.target.select();
+                });
+
+                // フォーカスが外れた時：計算結果を表示
+                i.addEventListener('blur', (e) => {
+                    const result = parseCalcValue(e.target.value);
+                    if (!isNaN(result.value)) {
+                        // 式を保存してから計算結果を表示
+                        e.target.dataset.expression = e.target.value;
+                        e.target.value = result.value;
+                    }
                 });
             });
 
