@@ -149,127 +149,88 @@
         }
 
         .status-container {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            display: flex;
+            gap: 8px;
             padding: 5px 0;
         }
 
         .status-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            background: var(--card-bg);
-            border-radius: 14px;
-            padding: 12px 14px;
-            border: 2px solid var(--border-color);
-            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: rgba(150, 150, 150, 0.06);
+            border: 1.5px solid var(--border-color);
             cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .status-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(76, 175, 80, 0.02) 100%);
-            opacity: 0;
-            transition: opacity 0.3s;
+            transition: all 0.25s ease;
+            flex: 1;
+            min-width: 0;
         }
 
         .status-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+            background: rgba(150, 150, 150, 0.12);
             border-color: #c0c0c0;
         }
 
         .status-item:active {
-            transform: translateY(0);
+            transform: scale(0.97);
         }
 
-        /* アバターアイコン */
-        .status-avatar {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
+        /* チェックボックス */
+        .status-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+            border: 2px solid #ccc;
+            background: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
-            font-weight: 800;
-            color: #888;
-            background: linear-gradient(135deg, #e8e8e8 0%, #d5d5d5 100%);
             flex-shrink: 0;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .status-checkbox .check-icon {
+            font-size: 13px;
+            font-weight: 800;
+            color: white;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         /* 名前テキスト */
         .status-name {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             color: var(--text-sub);
-            transition: color 0.3s;
-            line-height: 1.2;
-        }
-
-        .status-label {
-            font-size: 10px;
-            color: var(--text-muted);
-            font-weight: 600;
-            margin-top: 2px;
+            transition: all 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* 入力済み状態 */
         .status-item.completed {
+            background: rgba(76, 175, 80, 0.08);
             border-color: var(--success-color);
-            background: linear-gradient(135deg, rgba(76, 175, 80, 0.06) 0%, rgba(132, 250, 176, 0.1) 100%);
-            box-shadow: 0 3px 12px rgba(76, 175, 80, 0.15);
         }
 
-        .status-item.completed::before {
-            opacity: 1;
-        }
-
-        .status-item.completed .status-avatar {
+        .status-item.completed .status-checkbox {
             background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
-            color: white;
-            box-shadow: 0 3px 10px rgba(76, 175, 80, 0.35);
+            border-color: #43a047;
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+        }
+
+        .status-item.completed .status-checkbox .check-icon {
+            opacity: 1;
+            transform: scale(1);
         }
 
         .status-item.completed .status-name {
             color: #2e7d32;
             font-weight: 800;
-        }
-
-        .status-item.completed .status-label {
-            color: #4caf50;
-        }
-
-        /* チェックマーク登場アニメーション */
-        @keyframes checkPop {
-            0% {
-                transform: scale(0) rotate(-45deg);
-                opacity: 0;
-            }
-
-            60% {
-                transform: scale(1.2) rotate(0deg);
-                opacity: 1;
-            }
-
-            100% {
-                transform: scale(1) rotate(0deg);
-                opacity: 1;
-            }
-        }
-
-        .status-item.completed .status-avatar .check-icon {
-            animation: checkPop 0.4s ease-out forwards;
         }
 
         .summary-table {
@@ -601,6 +562,26 @@
                 padding: 15px;
             }
 
+            /* モバイルでもコンパクトに横一列 */
+            .status-item {
+                padding: 6px 8px;
+                gap: 6px;
+            }
+
+            .status-checkbox {
+                width: 18px;
+                height: 18px;
+                border-radius: 4px;
+            }
+
+            .status-checkbox .check-icon {
+                font-size: 11px;
+            }
+
+            .status-name {
+                font-size: 11px;
+            }
+
             .input-row {
                 grid-template-columns: 55px 1fr 1fr;
                 /* モバイルも縮小 */
@@ -667,32 +648,20 @@
                 <div class="section-title">✅ 入力状況</div>
                 <div class="status-container">
                     <div class="status-item" id="status-hirayama">
-                        <div class="status-avatar"><span class="initial-text">平</span></div>
-                        <div>
-                            <div class="status-name">平山</div>
-                            <div class="status-label">未入力</div>
-                        </div>
+                        <div class="status-checkbox"><span class="check-icon">✓</span></div>
+                        <div class="status-name">平山</div>
                     </div>
                     <div class="status-item" id="status-hikida">
-                        <div class="status-avatar"><span class="initial-text">匹</span></div>
-                        <div>
-                            <div class="status-name">匹田</div>
-                            <div class="status-label">未入力</div>
-                        </div>
+                        <div class="status-checkbox"><span class="check-icon">✓</span></div>
+                        <div class="status-name">匹田</div>
                     </div>
                     <div class="status-item" id="status-mukai">
-                        <div class="status-avatar"><span class="initial-text">向</span></div>
-                        <div>
-                            <div class="status-name">向井</div>
-                            <div class="status-label">未入力</div>
-                        </div>
+                        <div class="status-checkbox"><span class="check-icon">✓</span></div>
+                        <div class="status-name">向井</div>
                     </div>
                     <div class="status-item" id="status-oumi">
-                        <div class="status-avatar"><span class="initial-text">大</span></div>
-                        <div>
-                            <div class="status-name">大海</div>
-                            <div class="status-label">未入力</div>
-                        </div>
+                        <div class="status-checkbox"><span class="check-icon">✓</span></div>
+                        <div class="status-name">大海</div>
                     </div>
                 </div>
             </div>
@@ -1045,16 +1014,6 @@
                 let hasVal = equipments.some(eq => data[`${w.id}-${eq.id}-rca`] !== undefined || data[`${w.id}-${eq.id}-konren`] !== undefined);
                 const statusItem = document.getElementById(`status-${w.id}`);
                 statusItem.classList.toggle('completed', hasVal);
-                // アバター内のアイコン切り替え
-                const avatar = statusItem.querySelector('.status-avatar');
-                if (hasVal) {
-                    avatar.innerHTML = '<span class="check-icon">✓</span>';
-                } else {
-                    avatar.innerHTML = `<span class="initial-text">${w.name.charAt(0)}</span>`;
-                }
-                // ラベルテキスト切り替え
-                const label = statusItem.querySelector('.status-label');
-                if (label) label.textContent = hasVal ? '入力済み' : '未入力';
                 document.getElementById(`worker-${w.id}`).classList.toggle('has-input', hasVal);
             });
         });
