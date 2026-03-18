@@ -875,7 +875,7 @@
             // 上部の名前クリックで対象者の入力場所までスクロール
             document.querySelectorAll('.status-item').forEach(item => {
                 item.addEventListener('click', (e) => {
-                    const workerId = e.target.id.replace('status-', '');
+                    const workerId = item.id.replace('status-', '');
                     const targetCard = document.getElementById(`worker-${workerId}`);
                     if (targetCard) {
                         targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
